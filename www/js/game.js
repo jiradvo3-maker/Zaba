@@ -111,7 +111,7 @@ class Game {
     this.lanes = [];
     // Mezera mezi auty (v násobcích velikosti buňky) - s rostoucí obtížností
     // hustší provoz, ale vždy dost místa na to, aby se žába vešla do mezery.
-    const GAP_MULT = [3.2, 2.8, 2.4, 2.15, 1.9];
+    const GAP_MULT = [6.4, 5.6, 4.8, 4.3, 3.8];
     const gapMult = GAP_MULT[Math.min(this.level - 1, GAP_MULT.length - 1)];
     for (let row = 0; row < ROWS; row++) {
       if (ROW_TYPES[row] !== 'road') continue;

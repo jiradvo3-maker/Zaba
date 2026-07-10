@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<title>Žába - Skoky přes silnici</title>
+<meta name="theme-color" content="#0d3b24" />
+<link rel="icon" href="icons/icon-192.png" />
+<link rel="apple-touch-icon" href="icons/icon-192.png" />
+<link rel="manifest" href="manifest.json" />
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+<div id="app">
+
+  <!-- ===== HLAVNÍ MENU ===== -->
+  <section id="screen-menu" class="screen active">
+    <div class="menu-box">
+      <h1 class="game-title"><span class="frog-emoji">🐸</span>Žába</h1>
+      <p class="subtitle">Přeskákej přes silnici!</p>
+      <button class="btn btn-primary" id="btn-play">▶ Hrát</button>
+      <button class="btn" id="btn-leaderboard">🏆 Žebříček</button>
+      <button class="btn" id="btn-howto">❓ Jak hrát</button>
+      <button class="btn btn-icon-toggle" id="btn-sound-toggle">🔊 Zvuk zapnut</button>
+      <p class="footer-note">5 úrovní • 3 životy • nejlepší čas = nejlepší skóre</p>
+    </div>
+  </section>
+
+  <!-- ===== JAK HRÁT ===== -->
+  <section id="screen-howto" class="screen">
+    <div class="menu-box">
+      <h2>Jak hrát</h2>
+      <ul class="howto-list">
+        <li>🎮 Ovládej žábu šipkami dole, klávesnicí nebo <b>tahem prstu</b> po obrazovce.</li>
+        <li>🚗 Vyhni se autům na silnici, jinak přijdeš o život.</li>
+        <li>🌿 Bezpečně si odpočiň na travnatých pruzích mezi silnicemi.</li>
+        <li>⏱ Na každou úroveň máš omezený čas - čím rychleji doskáčeš do cíle, tím vyšší skóre získáš.</li>
+        <li>🏁 Cíl je na travnatém pruhu úplně nahoře.</li>
+        <li>❤️ Máš 3 životy. Když je ztratíš všechny, hra končí.</li>
+        <li>🥇 Umístíš-li se v Top 10, zapíšeš se do žebříčku!</li>
+      </ul>
+      <button class="btn btn-primary" id="btn-howto-back">Zpět</button>
+    </div>
+  </section>
+
+  <!-- ===== ŽEBŘÍČEK ===== -->
+  <section id="screen-leaderboard" class="screen">
+    <div class="menu-box">
+      <h2>🏆 Nejlepší výsledky</h2>
+      <ol id="leaderboard-list" class="leaderboard-list"></ol>
+      <button class="btn btn-primary" id="btn-leaderboard-back">Zpět</button>
+    </div>
+  </section>
+
+  <!-- ===== HERNÍ OBRAZOVKA ===== -->
+  <section id="screen-game" class="screen">
+    <div id="hud">
+      <div class="hud-left">
+        <span id="hud-level">Level 1/5</span>
+        <span id="hud-score">Skóre: 0</span>
+      </div>
+      <div id="hud-lives"></div>
+      <button id="btn-pause" aria-label="Pauza">⏸</button>
+    </div>
+    <div id="timer-wrap"><div id="timer-bar"></div></div>
+
+    <div id="canvas-wrap">
+      <canvas id="game-canvas"></canvas>
+      <div id="level-banner"></div>
+    </div>
+
+    <div id="dpad">
+      <button id="dpad-up" class="dpad-btn" data-dir="up">▲</button>
+      <div class="dpad-mid">
+        <button id="dpad-left" class="dpad-btn" data-dir="left">◀</button>
+        <button id="dpad-down" class="dpad-btn" data-dir="down">▼</button>
+        <button id="dpad-right" class="dpad-btn" data-dir="right">▶</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== PAUZA ===== -->
+  <div id="overlay-pause" class="overlay hidden">
+    <div class="overlay-box">
+      <h2>⏸ Pauza</h2>
+      <button class="btn btn-primary" id="btn-resume">▶ Pokračovat</button>
+      <button class="btn" id="btn-restart-level">🔁 Restart úrovně</button>
+      <button class="btn" id="btn-quit-menu">🏠 Do menu</button>
+    </div>
+  </div>
+
+  <!-- ===== LEVEL SPLNĚN ===== -->
+  <div id="overlay-levelcomplete" class="overlay hidden">
+    <div class="overlay-box">
+      <h2>✅ Úroveň splněna!</h2>
+      <p id="levelcomplete-time"></p>
+      <p id="levelcomplete-bonus"></p>
+      <button class="btn btn-primary" id="btn-next-level">Další úroveň ▶</button>
+    </div>
+  </div>
+
+  <!-- ===== VÝHRA (finální) ===== -->
+  <div id="overlay-win" class="overlay hidden">
+    <canvas id="fireworks-canvas"></canvas>
+    <div class="overlay-box win-box">
+      <h2>🎉 Vyhrál/a jsi! 🎉</h2>
+      <p>Prošel/prošla jsi všech 5 úrovní!</p>
+      <p id="win-score" class="score-big"></p>
+      <button class="btn btn-primary" id="btn-win-continue">Pokračovat</button>
+    </div>
+  </div>
+
+  <!-- ===== GAME OVER ===== -->
+  <div id="overlay-gameover" class="overlay hidden">
+    <div class="overlay-box">
+      <h2>💀 Konec hry</h2>
+      <p id="gameover-score" class="score-big"></p>
+      <button class="btn btn-primary" id="btn-gameover-continue">Pokračovat</button>
+    </div>
+  </div>
+
+  <!-- ===== ZÁPIS DO ŽEBŘÍČKU ===== -->
+  <div id="overlay-nameentry" class="overlay hidden">
+    <div class="overlay-box">
+      <h2>🏆 Nové nejlepší skóre!</h2>
+      <p>Umístil/a ses v TOP 10! Zadej své jméno:</p>
+      <input id="name-input" maxlength="14" placeholder="Tvoje jméno" autocomplete="off" />
+      <button class="btn btn-primary" id="btn-save-name">Uložit</button>
+    </div>
+  </div>
+
+</div>
+<script src="js/audio.js"></script>
+<script src="js/leaderboard.js"></script>
+<script src="js/fireworks.js"></script>
+<script src="js/game.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

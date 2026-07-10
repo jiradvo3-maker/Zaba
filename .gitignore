@@ -1,0 +1,19 @@
+node_modules/
+*.log
+.DS_Store
+
+# Android build outputs
+android/app/build/
+android/build/
+android/.gradle/
+android/local.properties
+android/captures/
+android/*.iml
+android/.idea/
+android/app/release/
+android/app/debug/
+
+# Keystore (nikdy needituj do repozitáře)
+*.keystore
+*.jks
+android-keystore.properties

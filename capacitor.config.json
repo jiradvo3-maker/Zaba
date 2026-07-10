@@ -1,0 +1,17 @@
+{
+  "appId": "cz.jiradvo3.zaba",
+  "appName": "Žába",
+  "webDir": "www",
+  "backgroundColor": "#08120c",
+  "android": {
+    "backgroundColor": "#08120c"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 1200,
+      "backgroundColor": "#08120c",
+      "androidScaleType": "CENTER_CROP",
+      "showSpinner": false
+    }
+  }
+}

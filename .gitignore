@@ -13,7 +13,7 @@ android/.idea/
 android/app/release/
 android/app/debug/
 
-# Keystore (nikdy needituj do repozitáře)
-*.keystore
-*.jks
-android-keystore.properties
+# Poznámka: android/app/zaba-release.keystore je záměrně v repozitáři -
+# jde o osobní hobby projekt bez distribuce na Play Store, klíč slouží
+# jen k tomu, aby APK nebylo podepsané sdíleným veřejným Android debug
+# klíčem (to spouští u Play Protect/antivirů heuristiku "neznámá appka").

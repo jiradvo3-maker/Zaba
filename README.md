@@ -32,9 +32,14 @@ npm run start
 Tento cloudový sandbox nemá přístup k Android SDK / `dl.google.com`, takže APK tady nejde zbuildit přímo. Build proto zajišťuje GitHub Actions:
 
 1. Po pushnutí větve se automaticky spustí workflow **Build Android APK**.
-2. Po doběhnutí (záložka *Actions* v repozitáři) si stáhni artefakt `zaba-debug-apk` → obsahuje `app-debug.apk`.
+2. Po doběhnutí (záložka *Actions* v repozitáři) si stáhni artefakt `zaba-apk` → obsahuje `app-release.apk`.
 3. APK pošli do telefonu (e-mail, Disk, USB…) a nainstaluj (je potřeba povolit „instalace z neznámých zdrojů“ pro daný zdroj).
 4. Pokud pushneš tag `vX.Y.Z`, workflow navíc vytvoří GitHub Release rovnou s přiloženým APK.
+
+APK je podepsané vlastním klíčem (`android/app/zaba-release.keystore`), ne
+sdíleným veřejným Android debug klíčem – ten totiž Play Protect a antiviry
+běžně vyhodnocují jako podezřelý, protože jím je podepsaná spousta
+testovacích i škodlivých aplikací.
 
 ### Lokální build (pokud máš Android Studio / SDK)
 
@@ -42,8 +47,8 @@ Tento cloudový sandbox nemá přístup k Android SDK / `dl.google.com`, takže 
 npm install
 npx cap sync android
 cd android
-./gradlew assembleDebug
-# výstup: android/app/build/outputs/apk/debug/app-debug.apk
+./gradlew assembleRelease
+# výstup: android/app/build/outputs/apk/release/app-release.apk
 ```
 
 ## Změna ikony / splash

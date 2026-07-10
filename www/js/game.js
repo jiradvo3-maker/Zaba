@@ -5,11 +5,11 @@ const ROW_TYPES = ['goal', 'road', 'road', 'grass', 'road', 'road', 'grass', 'ro
 const HOP_DURATION = 130; // ms
 
 const LEVELS = [
-  { time: 60, speedMult: 1.00, spawnMult: 1.00, label: 'Level 1' },
-  { time: 55, speedMult: 1.25, spawnMult: 1.15, label: 'Level 2' },
-  { time: 50, speedMult: 1.55, spawnMult: 1.30, label: 'Level 3' },
-  { time: 45, speedMult: 1.90, spawnMult: 1.50, label: 'Level 4' },
-  { time: 40, speedMult: 2.30, spawnMult: 1.70, label: 'Level 5' },
+  { time: 60, speedMult: 1.00, label: 'Level 1' },
+  { time: 55, speedMult: 1.25, label: 'Level 2' },
+  { time: 50, speedMult: 1.55, label: 'Level 3' },
+  { time: 45, speedMult: 1.90, label: 'Level 4' },
+  { time: 40, speedMult: 2.30, label: 'Level 5' },
 ];
 
 const CAR_PALETTE = [
@@ -109,17 +109,56 @@ class Game {
 
   _buildLanes(cfg) {
     this.lanes = [];
+    // Mezera mezi auty (v násobcích velikosti buňky) - s rostoucí obtížností
+    // hustší provoz, ale vždy dost místa na to, aby se žába vešla do mezery.
+    const GAP_MULT = [3.2, 2.8, 2.4, 2.15, 1.9];
+    const gapMult = GAP_MULT[Math.min(this.level - 1, GAP_MULT.length - 1)];
     for (let row = 0; row < ROWS; row++) {
       if (ROW_TYPES[row] !== 'road') continue;
       const dir = rowStartsRight(row) ? 1 : -1;
       const baseSpeed = (0.55 + row * 0.045) * this.cellSize * cfg.speedMult;
-      const spawnInterval = Math.max(650, (1900 - row * 60) / cfg.spawnMult);
-      this.lanes.push({
+      const rowGapMult = gapMult * (0.9 + Math.random() * 0.25);
+      const spawnInterval = (rowGapMult * this.cellSize / baseSpeed) * 1000;
+      const lane = {
         row, dir, speed: baseSpeed,
         spawnInterval, timeSinceSpawn: Math.random() * spawnInterval,
         cars: [],
-      });
+      };
+      this.lanes.push(lane);
+      this._warmupLane(lane);
     }
+  }
+
+  // Odsimuluje pruh dopředu, aby auta na začátku úrovně (nebo po ztrátě
+  // života) už byla rozmístěná po silnici, ne aby teprve vyjížděla z kraje
+  _warmupLane(lane) {
+    const w = this.viewW || 360;
+    const crossTimeMs = (w / lane.speed) * 1000;
+    const totalMs = crossTimeMs * 1.05;
+    const stepMs = 50;
+    lane.cars = [];
+    lane.timeSinceSpawn = Math.random() * lane.spawnInterval;
+    for (let elapsed = 0; elapsed < totalMs; elapsed += stepMs) {
+      this._updateLane(lane, stepMs);
+    }
+  }
+
+  _updateLane(lane, dt) {
+    const cw = this.cellSize;
+    lane.timeSinceSpawn += dt;
+    if (lane.timeSinceSpawn >= lane.spawnInterval) {
+      lane.timeSinceSpawn -= lane.spawnInterval;
+      const palette = CAR_PALETTE[Math.floor(Math.random() * CAR_PALETTE.length)];
+      const w = cw * (1.3 + Math.random() * 0.3);
+      const h = cw * 0.62;
+      const y = this._rowToPx(lane.row) - h / 2;
+      const x = lane.dir === 1 ? -w - 10 : this.viewW + 10;
+      lane.cars.push(new Car(x, y, w, h, lane.speed, lane.dir, palette));
+    }
+    for (const car of lane.cars) {
+      car.x += car.dir * car.speed * (dt / 1000);
+    }
+    lane.cars = lane.cars.filter(c => c.x > -c.w - 40 && c.x < this.viewW + 40);
   }
 
   _resetFrog() {
@@ -168,7 +207,7 @@ class Game {
     }
     this.timeLeft = this.levelTime;
     this._resetFrog();
-    for (const lane of this.lanes) lane.cars = [];
+    for (const lane of this.lanes) this._warmupLane(lane);
     this._emitTime();
   }
 
@@ -217,23 +256,7 @@ class Game {
     }
 
     // Pohyb aut
-    const cw = this.cellSize;
-    for (const lane of this.lanes) {
-      lane.timeSinceSpawn += dt;
-      if (lane.timeSinceSpawn >= lane.spawnInterval) {
-        lane.timeSinceSpawn = 0;
-        const palette = CAR_PALETTE[Math.floor(Math.random() * CAR_PALETTE.length)];
-        const w = cw * (1.3 + Math.random() * 0.3);
-        const h = cw * 0.62;
-        const y = this._rowToPx(lane.row) - h / 2;
-        const x = lane.dir === 1 ? -w - 10 : this.viewW + 10;
-        lane.cars.push(new Car(x, y, w, h, lane.speed, lane.dir, palette));
-      }
-      for (const car of lane.cars) {
-        car.x += car.dir * car.speed * (dt / 1000);
-      }
-      lane.cars = lane.cars.filter(c => c.x > -c.w - 40 && c.x < this.viewW + 40);
-    }
+    for (const lane of this.lanes) this._updateLane(lane, dt);
 
     this._checkCollisions();
   }
